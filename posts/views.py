@@ -1,6 +1,6 @@
 from django.core.paginator import Paginator
 from django.contrib.auth import get_user_model
-from django.shortcuts import render, reverse, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from .models import Post, Group
 from .forms import PostForm

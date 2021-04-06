@@ -39,8 +39,6 @@ class PostPagesTests(TestCase):
     def test_pages_use_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""
         templates_pages_names = {
-            'about/author.html': reverse('about:author'),
-            'about/tech.html': reverse('about:tech'),
             'profile.html':
                 reverse('posts:profile',
                         kwargs={'username': self.user.username}),
@@ -56,10 +54,9 @@ class PostPagesTests(TestCase):
                 }),
             'posts/new_post.html': reverse('posts:new_post'),
             'posts/index.html': reverse('posts:posts_index'),
-            'posts/group.html': (
+            'posts/group.html':
                 reverse('posts:group_posts',
-                        kwargs={'slug': self.test_group.slug})
-            ),
+                        kwargs={'slug': self.test_group.slug}),
         }
         # Проверяем, что при обращении к name вызывается
         # соответствующий HTML-шаблон

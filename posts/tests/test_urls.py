@@ -1,12 +1,13 @@
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
+from django.urls import reverse
 
 from posts.models import Group, Post
 
 User = get_user_model()
 
 
-class TaskURLTests(TestCase):
+class PostURLTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -17,7 +18,7 @@ class TaskURLTests(TestCase):
         cls.test_group = Group.objects.create(title='leo', slug='leo')
         # Создадим запись в БД для проверки доступности
         # адреса group/leo/
-        Post.objects.create(
+        cls.post = Post.objects.create(
             text='Тестовый текст для теста',
             pub_date=Post.pub_date,
             author=cls.user,
@@ -34,75 +35,95 @@ class TaskURLTests(TestCase):
         self.authorized_client.force_login(self.user)
         self.authorized_client_2.force_login(self.user_2)
 
-    def test_the_home_page_is_available_to_everyone(self):
-        """Главноая страница доступна всем"""
-        response = self.guest_client.get('/')
-        self.assertEqual(response.status_code, 200)
-
-    def test_the_group_page_is_available_to_everyone(self):
-        """Страница group/leo/ доступна всем"""
-        response = self.guest_client.get('/group/leo/')
-        self.assertEqual(response.status_code, 200)
-
-    def test_the_author_page_is_available_to_everyone(self):
-        """Страница /about/author/ доступна всем"""
-        response = self.guest_client.get('/about/author/')
-        self.assertEqual(response.status_code, 200)
-
-    def test_the_technology_page_is_available_to_everyone(self):
-        """Страница /about/tech/ доступна всем"""
-        response = self.guest_client.get('/about/tech/')
-        self.assertEqual(response.status_code, 200)
-
-    def test_the_profile_page_is_available_to_everyone(self):
-        """Страница /username/ доступна всем"""
-        response = self.guest_client.get('/AA/')
-        self.assertEqual(response.status_code, 200)
-
-    def test_the_page_of_a_separate_post_is_available_to_everyone(self):
-        """Страница отдельного поста доступна всем"""
-        response = self.guest_client.get('/AA/1/')
-        self.assertEqual(response.status_code, 200)
-
     def test_new_list_url_exists_at_desired_location(self):
         """Страница /new/ доступна авторизованному пользователю"""
-        response = self.authorized_client.get('/new/')
+        response = self.authorized_client.get(reverse('posts:new_post'))
         self.assertEqual(response.status_code, 200)
 
     def test_the_edit_page_is_available_to_the_not_authorized_user(self):
         """Страница редактирования недоступна не автору поста"""
-        response = self.authorized_client_2.get('/AA/1/edit/')
+        response = self.authorized_client_2.get(
+            reverse('posts:post_edit',
+                    kwargs={
+                        'username': self.user.username,
+                        'post_id': self.post.id
+                    }))
         self.assertEqual(response.status_code, 302)
 
     def test_the_edit_page_is_available_to_the_authorized_user(self):
         """Страница редактирования доступна автору поста"""
-        response = self.authorized_client.get('/AA/1/edit/')
+        response = self.authorized_client.get(
+            reverse('posts:post_edit',
+                    kwargs={
+                        'username': self.user.username,
+                        'post_id': self.post.id
+                    }))
         self.assertEqual(response.status_code, 200)
-
-    def test_anonymous_redirect_from_the_edit_page(self):
-        """редирект анонима со страницы редактирования"""
-        response = self.guest_client.get('/AA/1/edit/')
-        self.assertEqual(response.status_code, 302)
 
     def test_correct_redirect_of_the_edit_page_without_access_rights(self):
         """правильный редирект страницы редактирования без прав доступа"""
-        response = self.guest_client.get('/AA/1/edit/', follow=True)
+        response = self.guest_client.get(
+            reverse('posts:post_edit',
+                    kwargs={
+                        'username': self.user.username,
+                        'post_id': self.post.id
+                    }), follow=True)
         self.assertRedirects(response, '/auth/login/?next=/AA/1/edit/')
-
-    def test_new_list_url_redirect_anonymous(self):
-        """Страница /new/ перенаправляет анонимного пользователя."""
-        response = self.guest_client.get('/new/')
-        self.assertEqual(response.status_code, 302)
 
     def test_urls_uses_correct_template(self):
         """Соответствие страниц шаблонам"""
         templates_url_names = {
-            'posts/index.html': '/',
-            'posts/group.html': '/group/leo/',
-            'posts/new_post.html': '/new/',
-            'new_post.html': '/AA/1/edit/'
-        }
+            reverse('posts:posts_index'): 'posts/index.html',
+            reverse('posts:group_posts',
+                    kwargs={'slug': self.test_group.slug}):
+                        'posts/group.html',
+            reverse('posts:post_edit', kwargs={
+                    'username': self.user.username,
+                    'post_id': self.post.id
+                    }): 'new_post.html',
+            reverse('posts:new_post'): 'posts/new_post.html',
+            reverse('posts:profile',
+                    kwargs={'username': self.user.username}):
+                        'profile.html',
+            reverse('posts:post',
+                    kwargs={'post_id': self.post.id,
+                            'username': self.user.username}):
+                        'post.html'}
         for template, reverse_name in templates_url_names.items():
             with self.subTest():
-                response = self.authorized_client.get(reverse_name)
-                self.assertTemplateUsed(response, template)
+                response = self.authorized_client.get(template)
+                self.assertTemplateUsed(response, reverse_name)
+
+    def test_page_available_everyone(self):
+        """Страница  доступна всем"""
+        response_code_page = {
+            reverse('posts:profile',
+                    kwargs={'username': self.user.username}): 200,
+            reverse('posts:post',
+                    kwargs={'post_id': self.post.id,
+                            'username': self.user.username}): 200,
+            reverse('posts:group_posts',
+                    kwargs={'slug': self.test_group.slug}): 200,
+            reverse('posts:posts_index'): 200,
+        }
+        for template, stat_cod in response_code_page.items():
+            with self.subTest():
+                response = self.guest_client.get(template)
+                self.assertEqual(response.status_code, stat_cod)
+
+    def test_correct_redirect(self):
+        """правильный редирект"""
+        response_code_page = {
+            reverse('posts:post_edit', kwargs={
+                    'username': self.user.username,
+                    'post_id': self.post.id
+                    }): 302,
+            reverse('posts:post_edit', kwargs={
+                    'username': self.user.username,
+                    'post_id': self.post.id
+                    }): 302
+        }
+        for template, stat_cod in response_code_page.items():
+            with self.subTest():
+                response = self.guest_client.get(template)
+                self.assertEqual(response.status_code, stat_cod)

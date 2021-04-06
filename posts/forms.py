@@ -6,9 +6,9 @@ class PostForm(ModelForm):
 
     class Meta:
         model = Post
-        fields = ["group", "text"]
+        fields = ['group', 'text']
         widgets = {
-            "text": Textarea(attrs={
+            'text': Textarea(attrs={
                 'class': 'form-control',
                 'placeholder': 'Введите текст'
             }),

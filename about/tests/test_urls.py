@@ -1,8 +1,5 @@
-from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
-
-User = get_user_model()
 
 
 class AboutURLTests(TestCase):
@@ -14,12 +11,12 @@ class AboutURLTests(TestCase):
     def test_urls_uses_correct_template(self):
         """Соответствие страниц шаблонам"""
         templates_url_names = {
-            'about/author.html': 'about:author',
-            'about/tech.html': 'about:tech',
+            'about/author.html': reverse('about:author'),
+            'about/tech.html': reverse('about:tech'),
         }
         for template, reverse_name in templates_url_names.items():
             with self.subTest():
-                response = self.guest_client.get(reverse(reverse_name))
+                response = self.guest_client.get(reverse_name)
                 self.assertTemplateUsed(response, template)
 
     def test_page_available_everyone(self):

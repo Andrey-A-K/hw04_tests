@@ -15,7 +15,7 @@
 
 
     <h1>{% if not post %} Добавить запись {% else %} Редактировать запись {% endif %}</h1>
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
 
         {% for field in form %}

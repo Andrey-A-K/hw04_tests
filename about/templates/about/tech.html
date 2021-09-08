@@ -1,12 +1,11 @@
-<!-- any_dir/app_name/just_page.html -->
+{% extends "base.html" %}
+{% block title %}Технологии{% endblock %}
+{% block content %}
+{% load user_filters %}
 <html>
-  <head>
-    <title>Технологии</title>
-  </head>
-    
   <body>
-    <a class="p-20 text-dark" href="{% url 'posts:posts_index' %}">Главная</a>
     <h1>Как оно работает?</h1>
     <p>Джанго, Питон, немного HTML и чуточку чёрной магии, в которой я всё еще пытаюсь разобраться, и вот перед вами этот сайт</p>
   </body>
 </html>
+{% endblock %}

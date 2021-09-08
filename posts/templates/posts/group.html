@@ -2,15 +2,20 @@
 {% block title %}Записи сообщества {{ group.title }}{% endblock %}
 {% block header %}{% endblock %}
 {% block content %}
-    <h1>{{ group.title }}</h1>
-    <p>{{ group.description }}</p>
-    
-    {% for post in page %}
-    <h3>
-        Автор: {{ post.author.get_full_name }}, Дата публикации: {{ post.pub_date|date:"d M Y" }}
-    </h3>
-    <p>{{ post.text|linebreaksbr }}</p>
-    <hr>
-    {% endfor %}
-    {% include "paginator.html" %}
+{% load user_filters %}
+    <div class="container">
+           <h1>{{ group.title }}</h1>
+           <p>{{ group.description }}</p>
+            <!-- Вывод ленты записей -->
+                {% for post in page %}
+                  <!-- Вот он, новый include! -->
+                    {% include "post_item.html" with post=post %}
+                {% endfor %}
+    </div>
+
+        <!-- Вывод паджинатора -->
+        {% if page.has_other_pages %}
+            {% include "paginator.html" with items=page paginator=paginator%}
+        {% endif %}
+
 {% endblock %}

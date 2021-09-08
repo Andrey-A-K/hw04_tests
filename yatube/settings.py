@@ -25,8 +25,12 @@ SECRET_KEY = '9_&u74j7j0r1(vg8wjw!s7lr+8jnvld20jl4koj3+q(yacsg4s'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "[::1]",
+    "testserver",
+]
 
 # Application definition
 
@@ -40,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'sorl.thumbnail',
 ]
 
 MIDDLEWARE = [
@@ -131,6 +136,9 @@ STATIC_URL = "/static/"
 # задаём адрес директории, куда командой *collectstatic* будет собрана вся статика
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
 
 # Login
 
@@ -147,3 +155,9 @@ LOGIN_REDIRECT_URL = '/'
 EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
 # указываем директорию, в которую будут складываться файлы писем
 EMAIL_FILE_PATH = os.path.join(BASE_DIR, "sent_emails")
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
